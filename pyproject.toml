@@ -1,0 +1,20 @@
+[project]
+name = "raj-en-model"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.12.0",
+    "datasets>=4.4.1",
+    "evaluate>=0.4.6",
+    "faiss-cpu>=1.13.0",
+    "gradio>=6.1.0",
+    "nltk>=3.9.2",
+    "sacrebleu>=2.5.1",
+    "sentence-transformers>=5.1.2",
+    "sentencepiece>=0.2.1",
+    "torch>=2.9.1",
+    "torchvision>=0.24.1",
+    "transformers>=4.57.3",
+]
