@@ -8,3 +8,16 @@ wheels/
 
 # Virtual environments
 .venv
+.codex
+.gradio/
+data_bt/
+data_clean/
+data_filtered/
+data_raw/
+data_split/
+data_zero/
+nllb_finetuned/
+nllb_lora_finetuned/
+raj_en_mod_research_paper/
+rajasthani_male_mono.zip
+rajasthani_male_mono/

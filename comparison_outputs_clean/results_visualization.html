@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Translation Model Comparison</title>
+<style>
+body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#19212b;background:#f4f6f8;margin:0;padding:28px}
+main{max-width:1220px;margin:auto;background:white;padding:30px;border-radius:12px;box-shadow:0 2px 14px #17212b12}
+h1{font-size:28px;margin:0 0 4px}h2{font-size:20px;margin:32px 0 8px}.sub,.legend{color:#596574}
+.chart{overflow-x:auto;margin:16px 0 26px;border:1px solid #e4e8ed;border-radius:8px;padding:8px}
+svg{width:100%;min-width:780px;height:auto}.chart-title{font-size:17px;font-weight:700;fill:#19212b}
+.hint,.tick{font-size:12px;fill:#647080;font-weight:400}.grid{stroke:#e6eaf0;stroke-width:1}
+.row{font-size:13px;fill:#334155}.value{font-size:12px;fill:#263444}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid #e4e8ed;text-align:left;white-space:nowrap}
+th{background:#f1f4f7}.note{background:#fff8df;padding:12px 14px;border-radius:6px;color:#604c14}
+footer{margin-top:28px;color:#647080;font-size:12px}@media(max-width:700px){body{padding:10px}main{padding:16px}h1{font-size:23px}}
+</style></head><body><main>
+<h1>Translation Model Comparison</h1><p class="sub">Rajasthani · 4 runs · 2 plotted metrics</p>
+<p class="legend">Green bars: LoRA/fine-tuned/adapter. Blue bars: base/pretrained. Other runs get consistent colors.</p>
+<h2>Metric comparison</h2><section class="chart"><svg viewBox="0 0 1120 218" role="img">
+<text x="12" y="28" class="chart-title">BLEU <tspan class="hint">(higher is better)</tspan></text>
+<line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-0.70</text>
+<line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
+<text x="520.0" y="206" text-anchor="middle" class="tick">2.58</text>
+<line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
+<text x="690.0" y="206" text-anchor="middle" class="tick">5.86</text>
+<line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
+<text x="860.0" y="206" text-anchor="middle" class="tick">9.14</text>
+<line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">12.42</text>
+<text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
+<rect x="386.4" y="56" width="299.2" height="18" rx="3" fill="#2673a6"/>
+<text x="692.7" y="70" text-anchor="start" class="value">5.777</text>
+<text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
+<rect x="386.4" y="86" width="510.4" height="18" rx="3" fill="#23936a"/>
+<text x="903.8" y="100" text-anchor="start" class="value">9.853</text>
+<text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
+<rect x="386.4" y="116" width="333.4" height="18" rx="3" fill="#2673a6"/>
+<text x="726.8" y="130" text-anchor="start" class="value">6.436</text>
+<text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
+<rect x="386.4" y="146" width="607.1" height="18" rx="3" fill="#23936a"/>
+<text x="1000.6" y="160" text-anchor="start" class="value">11.721</text>
+</svg></section>
+<section class="chart"><svg viewBox="0 0 1120 218" role="img">
+<text x="12" y="28" class="chart-title">chrF++ <tspan class="hint">(higher is better)</tspan></text>
+<line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-2.06</text>
+<line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
+<text x="520.0" y="206" text-anchor="middle" class="tick">7.54</text>
+<line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
+<text x="690.0" y="206" text-anchor="middle" class="tick">17.13</text>
+<line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
+<text x="860.0" y="206" text-anchor="middle" class="tick">26.72</text>
+<line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">36.31</text>
+<text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
+<rect x="386.4" y="56" width="438.1" height="18" rx="3" fill="#2673a6"/>
+<text x="831.5" y="70" text-anchor="start" class="value">24.713</text>
+<text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
+<rect x="386.4" y="86" width="550.2" height="18" rx="3" fill="#23936a"/>
+<text x="943.7" y="100" text-anchor="start" class="value">31.040</text>
+<text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
+<rect x="386.4" y="116" width="450.0" height="18" rx="3" fill="#2673a6"/>
+<text x="843.4" y="130" text-anchor="start" class="value">25.387</text>
+<text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
+<rect x="386.4" y="146" width="607.1" height="18" rx="3" fill="#23936a"/>
+<text x="1000.6" y="160" text-anchor="start" class="value">34.251</text>
+</svg></section><h2>Scores and run parameters</h2><p class="note">This metrics CSV has no run-configuration columns. Add fields such as language, train/validation/test pair counts, epochs, learning rate, batch size, LoRA rank/alpha/dropout, precision, seed, runtime, and peak VRAM to compare settings.</p>
+<div class="table-wrap"><table><thead><tr><th>model</th><th>BLEU</th><th>chrF++</th></tr></thead><tbody><tr><td>nllb_base</td><td>5.7771</td><td>24.7132</td></tr><tr><td>nllb_lora</td><td>9.8534</td><td>31.0400</td></tr><tr><td>indictrans2_base</td><td>6.4357</td><td>25.3869</td></tr><tr><td>indictrans2_lora</td><td>11.7212</td><td>34.2511</td></tr></tbody></table></div>
+<footer>When sharing or publishing, include the test split, preprocessing, decoding settings, metric implementation/version, and run configuration.</footer>
+</main></body></html>

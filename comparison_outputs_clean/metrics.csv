@@ -1,0 +1,5 @@
+model,BLEU,chrF++
+nllb_base,5.7771,24.7132
+nllb_lora,9.8534,31.0400
+indictrans2_base,6.4357,25.3869
+indictrans2_lora,11.7212,34.2511
