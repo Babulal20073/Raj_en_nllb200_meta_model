@@ -1,12 +1,4 @@
-"""Train an IndicTrans2 LoRA adapter directly on Rajasthani→English pairs.
-
-Unlike finetune_indic_lora.py, this script does NOT use Hindi (hin_Deva) as a
-proxy language code for the source side.  The IndicProcessor is called without
-any src_lang/tgt_lang language tag on the source so the model sees the raw
-Rajasthani text and must learn the mapping purely from the paired data without
-an intermediate-language detour.  The target side is still preprocessed as
-eng_Latn (English) so IndicProcessor can apply correct post-processing.
-"""
+#Train an IndicTrans2 LoRA adapter directly on Rajasthani→English pairs
 import torch
 from datasets import Dataset
 from transformers.data.data_collator import pad_without_fast_tokenizer_warning
@@ -29,13 +21,10 @@ from IndicTransToolkit import IndicDataCollator, IndicProcessor
 
 
 MODEL_NAME = "ai4bharat/indictrans2-indic-en-dist-200M"
-TRAIN_SRC = "data_split/train.raj"
-TRAIN_TGT = "data_split/train.eng"
-DEV_SRC   = "data_split/val.raj"
-DEV_TGT   = "data_split/val.eng"
-# No intermediate language: we do NOT pass hin_Deva as a src_lang proxy.
-# The IndicProcessor will preprocess source text without a language tag so the
-# model must learn Rajasthani→English directly from the paired data via LoRA.
+TRAIN_SRC = "../data_split/train.raj"
+TRAIN_TGT = "../data_split/train.eng"
+DEV_SRC   = "../data_split/val.raj"
+DEV_TGT   = "../data_split/val.eng"
 TGT_LANG  = "eng_Latn"
 OUTPUT_DIR = "indictrans2_lora_rajasthani_direct"
 MAX_LEN   = 128
@@ -87,7 +76,6 @@ model     = AutoModelForSeq2SeqLM.from_pretrained(
 
 
 def tokenize_batch(batch):
-    """Tokenise source without any Hindi proxy and target as English."""
     # Preprocess source with no language tag so no intermediate-language
     # normalization (e.g., Hindi-specific Unicode normalization) is applied.
     # We pass the raw Rajasthani strings directly to the tokenizer.

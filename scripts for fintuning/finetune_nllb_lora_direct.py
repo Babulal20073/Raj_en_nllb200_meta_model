@@ -1,11 +1,5 @@
-"""Train an NLLB LoRA adapter directly on Rajasthani→English pairs.
+#Train an NLLB LoRA adapter directly on Rajasthani→English pairs.
 
-Unlike finetune_nllb_lora.py, this script does NOT use Hindi (hin_Deva) as a
-proxy language code for the source side.  Instead the source text is tokenised
-with *no* forced source-language token so the model must learn the mapping
-purely from the paired data without any intermediate-language detour.
-The target side still uses eng_Latn so that NLLB's forced-BOS decoding works.
-"""
 from pathlib import Path
 
 import torch
@@ -25,17 +19,14 @@ MODEL_REPO = "facebook/nllb-200-distilled-600M"
 _snapshots = Path.home() / ".cache/huggingface/hub/models--facebook--nllb-200-distilled-600M/snapshots"
 _cached = [p for p in _snapshots.glob("*") if (p / "pytorch_model.bin").is_file()]
 MODEL_NAME = str(_cached[0]) if _cached else MODEL_REPO
-TRAIN_SRC = "data_split/train.raj"
-TRAIN_TGT = "data_split/train.eng"
-DEV_SRC   = "data_split/val.raj"
-DEV_TGT   = "data_split/val.eng"
-# No intermediate language: we do NOT set src_lang to hin_Deva.
-# The tokenizer will encode source text without prepending any language token,
-# letting the model learn Rajasthani patterns from scratch via LoRA.
+TRAIN_SRC = "../data_split/train.raj"
+TRAIN_TGT = "../data_split/train.eng"
+DEV_SRC   = "../data_split/val.raj"
+DEV_TGT   = "../data_split/val.eng"
 TGT_LANG  = "eng_Latn"
 OUTPUT_DIR = "nllb_lora_rajasthani_direct"
 MAX_LEN   = 128
-TRAIN_BATCH_SIZE = 1   # CPU-safe; increase only when GPU memory is available
+TRAIN_BATCH_SIZE = 4   
 GRAD_ACCUM = 8
 EPOCHS    = 5
 LR        = 2e-4
@@ -83,19 +74,16 @@ model.generation_config.forced_bos_token_id = tokenizer.convert_tokens_to_ids(TG
 
 def tokenize(batch):
     """Tokenise source with no language prefix and target as English."""
-    # Encode source text directly — no src_lang token prepended.
     model_inputs = tokenizer(
         batch["src"],
         max_length=MAX_LEN,
         truncation=True,
     )
-    # Encode target with the English language token.
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(
-            batch["tgt"],
-            max_length=MAX_LEN,
-            truncation=True,
-        )
+    labels = tokenizer(
+        batch["tgt"],
+        max_length=MAX_LEN,
+        truncation=True,
+    )
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
 
@@ -132,7 +120,7 @@ args = Seq2SeqTrainingArguments(
     bf16=use_bf16,
     fp16=use_cuda and not use_bf16,
     lr_scheduler_type="cosine",
-    warmup_ratio=0.05,
+    warmup_steps=150,
     weight_decay=0.01,
     predict_with_generate=False,
     eval_strategy="epoch",
