@@ -42,7 +42,7 @@ OUTPUT_DIR = "nllb_lora_rajasthani_direct"
 MAX_LEN   = 128
 TRAIN_BATCH_SIZE = 4   
 GRAD_ACCUM = 8
-EPOCHS    = 100
+EPOCHS    = 10
 LR        = 2e-2
 SEED      = 80085
 

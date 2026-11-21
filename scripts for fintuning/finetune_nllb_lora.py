@@ -42,9 +42,9 @@ OUTPUT_DIR = "nllb_lora_rajasthani_clean"
 MAX_LEN = 128
 TRAIN_BATCH_SIZE = 1  # CPU-safe; increase only when GPU memory is available
 GRAD_ACCUM = 8
-EPOCHS = 5
+EPOCHS = 10
 LR = 2e-4
-SEED = 42
+SEED = 80085
 
 N_TRIALS = 10
 SEARCH_SPACE = {
