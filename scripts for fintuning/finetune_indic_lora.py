@@ -51,12 +51,12 @@ EPOCHS = 5
 LR = 2e-4
 SEED = 42
 
-N_TRIALS = 5
+N_TRIALS = 10
 SEARCH_SPACE = {
-    "lr": (1e-5, 5e-4, "log"),
-    "r": [8, 16, 32, 64],
-    "lora_alpha": [16, 32, 64],
-    "lora_dropout": [0.05, 0.1, 0.2],
+    "lr": (5e-6, 1e-3, "log"),
+    "r": [4, 8, 16, 32, 64, 128],
+    "lora_alpha": [8, 16, 32, 64, 128],
+    "lora_dropout": [0.0, 0.05, 0.1, 0.15, 0.2, 0.3],
 }
 
 

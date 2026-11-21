@@ -19,48 +19,48 @@ evalaute :
 
 
 ```
-Raj_en_nllb200_meta_model/
-├── scripts for fintuning/            # Primary active pipelines (UNTOUCHED)
-│   ├── finetune_nllb_lora.py         # NLLB LoRA (Hindi pivot) + Bayesian Search
-│   ├── finetune_nllb_lora_direct.py  # NLLB LoRA (Direct) + Bayesian Search
-│   ├── finetune_indic_lora.py        # IndicTrans2 LoRA (Hindi pivot) + Bayesian Search
-│   ├── finetune_indic_lora_direct.py # IndicTrans2 LoRA (Direct) + Bayesian Search
-│   ├── bayesian_search.py            # Bayesian Optimization CV & Loss Tracker
-│   ├── evaluate_clean_comparison.py  # Evaluation (BLEU, chrF, chrF++, Acc, SemAcc)
-│   ├── evaluate_indic_lora.py        # IndicTrans2 evaluation
-│   ├── evaluate_lora.py              # LoRA checkpoint evaluation
-│   ├── visualize_results.py          # HTML & chart visualizer
-│   ├── merge_moe_NLLB.py             # Model merging / MoE router script
-│   ├── run_it                        # Pipeline runner
-│   └── test setup/                   # 16-test smoke suite (4 approaches x 4 languages)
-│
-├── extra_scripts/                    # Neat archive of non-active root scripts
-│   ├── data_pipeline/                # Historical corpus & cleaning scripts
-│   │   ├── back_translate.py
-│   │   ├── build_corpus.py
-│   │   ├── labse_filter.py
-│   │   ├── prepare_dataset.py
-│   │   └── split_dataset.py
-│   │
-│   ├── early_experiments/            # Early/baseline experiment scripts
-│   │   ├── app.py
-│   │   ├── evaluate.py
-│   │   ├── evaluate_lora.py
-│   │   ├── finetune_nllb.py
-│   │   ├── finetune_nllb_lora.py
-│   │   ├── main.py
-│   │   ├── predictions.txt
-│   │   └── zero_shot_translate.py
-│   │
-│   └── stray_artifacts/              # Duplicate/stray files from root
-│       ├── =4.57.3
-│       ├── re
-│       ├── README (2).md
-│       └── .git (2)/
-│
-├── data_clean/                       # Processed datasets
-├── data_final/
-├── data_split/
-├── comparison_outputs_clean/         # Evaluation benchmarks & metrics
-└── README.md, pyproject.toml, ...    # Standard root configs
+    Raj_en_nllb200_meta_model/
+    ├── scripts for fintuning/            # Primary active pipelines (UNTOUCHED)
+    │   ├── finetune_nllb_lora.py         # NLLB LoRA (Hindi pivot) + Bayesian Search
+    │   ├── finetune_nllb_lora_direct.py  # NLLB LoRA (Direct) + Bayesian Search
+    │   ├── finetune_indic_lora.py        # IndicTrans2 LoRA (Hindi pivot) + Bayesian Search
+    │   ├── finetune_indic_lora_direct.py # IndicTrans2 LoRA (Direct) + Bayesian Search
+    │   ├── bayesian_search.py            # Bayesian Optimization CV & Loss Tracker
+    │   ├── evaluate_clean_comparison.py  # Evaluation (BLEU, chrF, chrF++, Acc, SemAcc)
+    │   ├── evaluate_indic_lora.py        # IndicTrans2 evaluation
+    │   ├── evaluate_lora.py              # LoRA checkpoint evaluation
+    │   ├── visualize_results.py          # HTML & chart visualizer
+    │   ├── merge_moe_NLLB.py             # Model merging / MoE router script
+    │   ├── run_it                        # Pipeline runner
+    │   └── test setup/                   # 16-test smoke suite (4 approaches x 4 languages)
+    │
+    ├── extra_scripts/                    # Neat archive of non-active root scripts
+    │   ├── data_pipeline/                # Historical corpus & cleaning scripts
+    │   │   ├── back_translate.py
+    │   │   ├── build_corpus.py
+    │   │   ├── labse_filter.py
+    │   │   ├── prepare_dataset.py
+    │   │   └── split_dataset.py
+    │   │
+    │   ├── early_experiments/            # Early/baseline experiment scripts
+    │   │   ├── app.py
+    │   │   ├── evaluate.py
+    │   │   ├── evaluate_lora.py
+    │   │   ├── finetune_nllb.py
+    │   │   ├── finetune_nllb_lora.py
+    │   │   ├── main.py
+    │   │   ├── predictions.txt
+    │   │   └── zero_shot_translate.py
+    │   │
+    │   └── stray_artifacts/              # Duplicate/stray files from root
+    │       ├── =4.57.3
+    │       ├── re
+    │       ├── README (2).md
+    │       └── .git (2)/
+    │
+    ├── data_clean/                       # Processed datasets
+    ├── data_final/
+    ├── data_split/
+    ├── comparison_outputs_clean/         # Evaluation benchmarks & metrics
+    └── README.md, pyproject.toml, ...    # Standard root configs
 ```
