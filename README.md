@@ -18,6 +18,7 @@ evalaute :
 
 
 
+```
 Raj_en_nllb200_meta_model/
 ├── scripts for fintuning/            # Primary active pipelines (UNTOUCHED)
 │   ├── finetune_nllb_lora.py         # NLLB LoRA (Hindi pivot) + Bayesian Search
@@ -62,3 +63,4 @@ Raj_en_nllb200_meta_model/
 ├── data_split/
 ├── comparison_outputs_clean/         # Evaluation benchmarks & metrics
 └── README.md, pyproject.toml, ...    # Standard root configs
+```
