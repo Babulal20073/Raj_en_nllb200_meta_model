@@ -12,11 +12,14 @@ Usage (run from the project root, e.g. Raj_en_nllb200_meta_model/):
 """
 
 import re
+import numpy as np
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from peft import PeftModel
 from sacrebleu import corpus_bleu
 from sacrebleu.metrics import CHRF
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # IndicTransToolkit patch – the collator resolves this as a module-level name
 from transformers.data.data_collator import pad_without_fast_tokenizer_warning
@@ -145,16 +148,41 @@ def _normalize(s):
     return re.sub(r"\s+", " ", s.strip().lower())
 
 
+def compute_semantic_accuracy(hypotheses, references):
+    """Compute semantic accuracy (0-100%) via embedding or TF-IDF cosine similarity."""
+    try:
+        from sentence_transformers import SentenceTransformer, util
+        st_model = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+        emb_h = st_model.encode(hypotheses, convert_to_tensor=True)
+        emb_r = st_model.encode(references, convert_to_tensor=True)
+        cos_sim = util.cos_sim(emb_h, emb_r)
+        return float(torch.diag(cos_sim).mean().item()) * 100.0
+    except Exception:
+        pass
+
+    scores = []
+    for h, r in zip(hypotheses, references):
+        if not h.strip() or not r.strip():
+            scores.append(1.0 if h.strip() == r.strip() else 0.0)
+            continue
+        vec = TfidfVectorizer(ngram_range=(1, 2), analyzer="char_wb").fit([h, r])
+        m = vec.transform([h, r])
+        scores.append(float(cosine_similarity(m[0:1], m[1:2])[0][0]))
+    return float(np.mean(scores)) * 100.0 if scores else 0.0
+
+
 def evaluate(name, hyps):
-    """Compute and print BLEU / chrF / exact-match accuracy."""
+    """Compute and print BLEU / chrF / chrF++ / exact-match / semantic accuracy."""
     bleu = corpus_bleu(hyps, [ref_sentences]).score
-    chrf = CHRF().corpus_score(hyps, [ref_sentences]).score
+    chrf = CHRF(word_order=0).corpus_score(hyps, [ref_sentences]).score
+    chrf_plus = CHRF(word_order=2).corpus_score(hyps, [ref_sentences]).score
     acc  = 100.0 * sum(
         _normalize(h) == _normalize(r)
         for h, r in zip(hyps, ref_sentences)
     ) / len(ref_sentences)
-    print(f"{name:<35} BLEU: {bleu:6.2f} | chrF: {chrf:6.2f} | Acc: {acc:6.2f}")
-    return bleu, chrf, acc
+    sem_acc = compute_semantic_accuracy(hyps, ref_sentences)
+    print(f"{name:<28} BLEU: {bleu:5.2f} | chrF: {chrf:5.2f} | chrF++: {chrf_plus:5.2f} | Acc: {acc:5.2f}% | SemAcc: {sem_acc:5.2f}%")
+    return bleu, chrf, chrf_plus, acc, sem_acc
 
 
 # ---------- Helper: load base model ----------
@@ -184,7 +212,7 @@ tokenizer = load_tokenizer()
 print("\n[1/3] Evaluating Zero-Shot IndicTrans2 (proxy src_lang) ...")
 zero_model = _load_base(dtype).to(DEVICE)
 zero_hyps  = _translate_proxy(zero_model, tokenizer)
-zero_bleu, zero_chrf, zero_acc = evaluate("Zero-Shot IndicTrans2 (proxy)", zero_hyps)
+zero_bleu, zero_chrf, zero_chrf_plus, zero_acc, zero_sem = evaluate("Zero-Shot IndicTrans2 (proxy)", zero_hyps)
 del zero_model
 if DEVICE == "cuda":
     torch.cuda.empty_cache()
@@ -194,7 +222,7 @@ print("\n[2/3] Evaluating LoRA Proxy IndicTrans2 ...")
 proxy_base  = _load_base(dtype)
 proxy_model = PeftModel.from_pretrained(proxy_base, LORA_PROXY_PATH).to(DEVICE)
 proxy_hyps  = _translate_proxy(proxy_model, tokenizer)
-proxy_bleu, proxy_chrf, proxy_acc = evaluate("LoRA Proxy IndicTrans2", proxy_hyps)
+proxy_bleu, proxy_chrf, proxy_chrf_plus, proxy_acc, proxy_sem = evaluate("LoRA Proxy IndicTrans2", proxy_hyps)
 del proxy_model
 if DEVICE == "cuda":
     torch.cuda.empty_cache()
@@ -204,17 +232,17 @@ print("\n[3/3] Evaluating LoRA Direct IndicTrans2 ...")
 direct_base  = _load_base(dtype)
 direct_model = PeftModel.from_pretrained(direct_base, LORA_DIRECT_PATH).to(DEVICE)
 direct_hyps  = _translate_direct(direct_model, tokenizer)
-direct_bleu, direct_chrf, direct_acc = evaluate("LoRA Direct IndicTrans2", direct_hyps)
+direct_bleu, direct_chrf, direct_chrf_plus, direct_acc, direct_sem = evaluate("LoRA Direct IndicTrans2", direct_hyps)
 del direct_model
 if DEVICE == "cuda":
     torch.cuda.empty_cache()
 
 # ---- Summary table ----
 print("\n")
-print("=" * 62)
-print(f"{'Model':<35} {'BLEU':>6}  {'chrF':>6}  {'Acc':>6}")
-print("-" * 62)
-print(f"{'Zero-Shot IndicTrans2 (proxy)':<35} {zero_bleu:6.2f}  {zero_chrf:6.2f}  {zero_acc:6.2f}")
-print(f"{'LoRA Proxy IndicTrans2':<35} {proxy_bleu:6.2f}  {proxy_chrf:6.2f}  {proxy_acc:6.2f}")
-print(f"{'LoRA Direct IndicTrans2':<35} {direct_bleu:6.2f}  {direct_chrf:6.2f}  {direct_acc:6.2f}")
-print("=" * 62)
+print("=" * 76)
+print(f"{'Model':<30} {'BLEU':>6}  {'chrF':>6}  {'chrF++':>6}  {'ExactAcc':>8}  {'SemAcc':>8}")
+print("-" * 76)
+print(f"{'Zero-Shot IndicTrans2 (proxy)':<30} {zero_bleu:6.2f}  {zero_chrf:6.2f}  {zero_chrf_plus:6.2f}    {zero_acc:5.2f}%     {zero_sem:5.2f}%")
+print(f"{'LoRA Proxy IndicTrans2':<30} {proxy_bleu:6.2f}  {proxy_chrf:6.2f}  {proxy_chrf_plus:6.2f}    {proxy_acc:5.2f}%     {proxy_sem:5.2f}%")
+print(f"{'LoRA Direct IndicTrans2':<30} {direct_bleu:6.2f}  {direct_chrf:6.2f}  {direct_chrf_plus:6.2f}    {direct_acc:5.2f}%     {direct_sem:5.2f}%")
+print("=" * 76)

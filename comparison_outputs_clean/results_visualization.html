@@ -13,58 +13,133 @@ th,td{padding:8px 10px;border-bottom:1px solid #e4e8ed;text-align:left;white-spa
 th{background:#f1f4f7}.note{background:#fff8df;padding:12px 14px;border-radius:6px;color:#604c14}
 footer{margin-top:28px;color:#647080;font-size:12px}@media(max-width:700px){body{padding:10px}main{padding:16px}h1{font-size:23px}}
 </style></head><body><main>
-<h1>Translation Model Comparison</h1><p class="sub">Rajasthani · 4 runs · 2 plotted metrics</p>
+<h1>Translation Model Comparison</h1><p class="sub">Rajasthani · 4 runs · 5 plotted metrics</p>
 <p class="legend">Green bars: LoRA/fine-tuned/adapter. Blue bars: base/pretrained. Other runs get consistent colors.</p>
 <h2>Metric comparison</h2><section class="chart"><svg viewBox="0 0 1120 218" role="img">
 <text x="12" y="28" class="chart-title">BLEU <tspan class="hint">(higher is better)</tspan></text>
 <line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
-<text x="350.0" y="206" text-anchor="middle" class="tick">-0.70</text>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-0.01</text>
 <line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
-<text x="520.0" y="206" text-anchor="middle" class="tick">2.58</text>
+<text x="520.0" y="206" text-anchor="middle" class="tick">0.04</text>
 <line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
-<text x="690.0" y="206" text-anchor="middle" class="tick">5.86</text>
+<text x="690.0" y="206" text-anchor="middle" class="tick">0.10</text>
 <line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
-<text x="860.0" y="206" text-anchor="middle" class="tick">9.14</text>
+<text x="860.0" y="206" text-anchor="middle" class="tick">0.15</text>
 <line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
-<text x="1030.0" y="206" text-anchor="middle" class="tick">12.42</text>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">0.21</text>
 <text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
-<rect x="386.4" y="56" width="299.2" height="18" rx="3" fill="#2673a6"/>
-<text x="692.7" y="70" text-anchor="start" class="value">5.777</text>
+<rect x="386.4" y="56" width="607.1" height="18" rx="3" fill="#2673a6"/>
+<text x="1000.6" y="70" text-anchor="start" class="value">0.195</text>
 <text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
-<rect x="386.4" y="86" width="510.4" height="18" rx="3" fill="#23936a"/>
-<text x="903.8" y="100" text-anchor="start" class="value">9.853</text>
+<rect x="386.4" y="86" width="594.0" height="18" rx="3" fill="#23936a"/>
+<text x="987.5" y="100" text-anchor="start" class="value">0.190</text>
 <text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
-<rect x="386.4" y="116" width="333.4" height="18" rx="3" fill="#2673a6"/>
-<text x="726.8" y="130" text-anchor="start" class="value">6.436</text>
+<rect x="386.4" y="116" width="469.8" height="18" rx="3" fill="#2673a6"/>
+<text x="863.2" y="130" text-anchor="start" class="value">0.150</text>
 <text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
-<rect x="386.4" y="146" width="607.1" height="18" rx="3" fill="#23936a"/>
-<text x="1000.6" y="160" text-anchor="start" class="value">11.721</text>
+<rect x="386.4" y="146" width="577.8" height="18" rx="3" fill="#23936a"/>
+<text x="971.2" y="160" text-anchor="start" class="value">0.185</text>
+</svg></section>
+<section class="chart"><svg viewBox="0 0 1120 218" role="img">
+<text x="12" y="28" class="chart-title">chrF <tspan class="hint">(higher is better)</tspan></text>
+<line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-0.76</text>
+<line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
+<text x="520.0" y="206" text-anchor="middle" class="tick">2.77</text>
+<line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
+<text x="690.0" y="206" text-anchor="middle" class="tick">6.30</text>
+<line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
+<text x="860.0" y="206" text-anchor="middle" class="tick">9.82</text>
+<line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">13.35</text>
+<text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
+<rect x="386.4" y="56" width="548.6" height="18" rx="3" fill="#2673a6"/>
+<text x="942.0" y="70" text-anchor="start" class="value">11.378</text>
+<text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
+<rect x="386.4" y="86" width="607.1" height="18" rx="3" fill="#23936a"/>
+<text x="1000.6" y="100" text-anchor="start" class="value">12.592</text>
+<text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
+<rect x="386.4" y="116" width="514.8" height="18" rx="3" fill="#2673a6"/>
+<text x="908.2" y="130" text-anchor="start" class="value">10.677</text>
+<text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
+<rect x="386.4" y="146" width="603.2" height="18" rx="3" fill="#23936a"/>
+<text x="996.6" y="160" text-anchor="start" class="value">12.510</text>
 </svg></section>
 <section class="chart"><svg viewBox="0 0 1120 218" role="img">
 <text x="12" y="28" class="chart-title">chrF++ <tspan class="hint">(higher is better)</tspan></text>
 <line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
-<text x="350.0" y="206" text-anchor="middle" class="tick">-2.06</text>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-0.67</text>
 <line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
-<text x="520.0" y="206" text-anchor="middle" class="tick">7.54</text>
+<text x="520.0" y="206" text-anchor="middle" class="tick">2.47</text>
 <line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
-<text x="690.0" y="206" text-anchor="middle" class="tick">17.13</text>
+<text x="690.0" y="206" text-anchor="middle" class="tick">5.62</text>
 <line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
-<text x="860.0" y="206" text-anchor="middle" class="tick">26.72</text>
+<text x="860.0" y="206" text-anchor="middle" class="tick">8.77</text>
 <line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
-<text x="1030.0" y="206" text-anchor="middle" class="tick">36.31</text>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">11.91</text>
 <text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
-<rect x="386.4" y="56" width="438.1" height="18" rx="3" fill="#2673a6"/>
-<text x="831.5" y="70" text-anchor="start" class="value">24.713</text>
+<rect x="386.4" y="56" width="538.6" height="18" rx="3" fill="#2673a6"/>
+<text x="932.0" y="70" text-anchor="start" class="value">9.971</text>
 <text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
-<rect x="386.4" y="86" width="550.2" height="18" rx="3" fill="#23936a"/>
-<text x="943.7" y="100" text-anchor="start" class="value">31.040</text>
+<rect x="386.4" y="86" width="607.1" height="18" rx="3" fill="#23936a"/>
+<text x="1000.6" y="100" text-anchor="start" class="value">11.240</text>
 <text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
-<rect x="386.4" y="116" width="450.0" height="18" rx="3" fill="#2673a6"/>
-<text x="843.4" y="130" text-anchor="start" class="value">25.387</text>
+<rect x="386.4" y="116" width="504.6" height="18" rx="3" fill="#2673a6"/>
+<text x="898.0" y="130" text-anchor="start" class="value">9.341</text>
+<text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
+<rect x="386.4" y="146" width="602.7" height="18" rx="3" fill="#23936a"/>
+<text x="996.1" y="160" text-anchor="start" class="value">11.158</text>
+</svg></section>
+<section class="chart"><svg viewBox="0 0 1120 218" role="img">
+<text x="12" y="28" class="chart-title">Accuracy <tspan class="hint">(higher is better)</tspan></text>
+<line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-0.06</text>
+<line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
+<text x="520.0" y="206" text-anchor="middle" class="tick">0.22</text>
+<line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
+<text x="690.0" y="206" text-anchor="middle" class="tick">0.50</text>
+<line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
+<text x="860.0" y="206" text-anchor="middle" class="tick">0.78</text>
+<line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">1.06</text>
+<text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
+<rect x="386.4" y="56" width="1.0" height="18" rx="3" fill="#2673a6"/>
+<text x="393.4" y="70" text-anchor="start" class="value">0.000</text>
+<text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
+<rect x="386.4" y="86" width="1.0" height="18" rx="3" fill="#23936a"/>
+<text x="393.4" y="100" text-anchor="start" class="value">0.000</text>
+<text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
+<rect x="386.4" y="116" width="1.0" height="18" rx="3" fill="#2673a6"/>
+<text x="393.4" y="130" text-anchor="start" class="value">0.000</text>
+<text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
+<rect x="386.4" y="146" width="1.0" height="18" rx="3" fill="#23936a"/>
+<text x="393.4" y="160" text-anchor="start" class="value">0.000</text>
+</svg></section>
+<section class="chart"><svg viewBox="0 0 1120 218" role="img">
+<text x="12" y="28" class="chart-title">Semantic Accuracy <tspan class="hint">(higher is better)</tspan></text>
+<line x1="350.0" y1="48" x2="350.0" y2="179" class="grid"/>
+<text x="350.0" y="206" text-anchor="middle" class="tick">-4.67</text>
+<line x1="520.0" y1="48" x2="520.0" y2="179" class="grid"/>
+<text x="520.0" y="206" text-anchor="middle" class="tick">17.14</text>
+<line x1="690.0" y1="48" x2="690.0" y2="179" class="grid"/>
+<text x="690.0" y="206" text-anchor="middle" class="tick">38.95</text>
+<line x1="860.0" y1="48" x2="860.0" y2="179" class="grid"/>
+<text x="860.0" y="206" text-anchor="middle" class="tick">60.76</text>
+<line x1="1030.0" y1="48" x2="1030.0" y2="179" class="grid"/>
+<text x="1030.0" y="206" text-anchor="middle" class="tick">82.57</text>
+<text x="338" y="70" text-anchor="end" class="row">Rajasthani / nllb_base</text>
+<rect x="386.4" y="56" width="591.3" height="18" rx="3" fill="#2673a6"/>
+<text x="984.7" y="70" text-anchor="start" class="value">75.858</text>
+<text x="338" y="100" text-anchor="end" class="row">Rajasthani / nllb_lora</text>
+<rect x="386.4" y="86" width="602.4" height="18" rx="3" fill="#23936a"/>
+<text x="995.9" y="100" text-anchor="start" class="value">77.289</text>
+<text x="338" y="130" text-anchor="end" class="row">Rajasthani / indictrans2_base</text>
+<rect x="386.4" y="116" width="578.2" height="18" rx="3" fill="#2673a6"/>
+<text x="971.7" y="130" text-anchor="start" class="value">74.183</text>
 <text x="338" y="160" text-anchor="end" class="row">Rajasthani / indictrans2_lora</text>
 <rect x="386.4" y="146" width="607.1" height="18" rx="3" fill="#23936a"/>
-<text x="1000.6" y="160" text-anchor="start" class="value">34.251</text>
+<text x="1000.6" y="160" text-anchor="start" class="value">77.893</text>
 </svg></section><h2>Scores and run parameters</h2><p class="note">This metrics CSV has no run-configuration columns. Add fields such as language, train/validation/test pair counts, epochs, learning rate, batch size, LoRA rank/alpha/dropout, precision, seed, runtime, and peak VRAM to compare settings.</p>
-<div class="table-wrap"><table><thead><tr><th>model</th><th>BLEU</th><th>chrF++</th></tr></thead><tbody><tr><td>nllb_base</td><td>5.7771</td><td>24.7132</td></tr><tr><td>nllb_lora</td><td>9.8534</td><td>31.0400</td></tr><tr><td>indictrans2_base</td><td>6.4357</td><td>25.3869</td></tr><tr><td>indictrans2_lora</td><td>11.7212</td><td>34.2511</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>model</th><th>BLEU</th><th>chrF</th><th>chrF++</th><th>Accuracy</th><th>Semantic_Accuracy</th></tr></thead><tbody><tr><td>nllb_base</td><td>0.1945</td><td>11.3777</td><td>9.9708</td><td>0.0000</td><td>75.8583</td></tr><tr><td>nllb_lora</td><td>0.1903</td><td>12.5924</td><td>11.2403</td><td>0.0000</td><td>77.2892</td></tr><tr><td>indictrans2_base</td><td>0.1505</td><td>10.6767</td><td>9.3414</td><td>0.0000</td><td>74.1835</td></tr><tr><td>indictrans2_lora</td><td>0.1851</td><td>12.5099</td><td>11.1584</td><td>0.0000</td><td>77.8933</td></tr></tbody></table></div>
 <footer>When sharing or publishing, include the test split, preprocessing, decoding settings, metric implementation/version, and run configuration.</footer>
 </main></body></html>

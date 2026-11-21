@@ -1,11 +1,15 @@
 """Evaluate base and LoRA NLLB/IndicTrans2 on the untouched clean test split."""
 
 import gc
+import re
 from pathlib import Path
 
+import numpy as np
 import torch
 from peft import PeftModel
 from sacrebleu.metrics import BLEU, CHRF
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from IndicTransToolkit import IndicProcessor
 
@@ -37,13 +41,53 @@ def read_parallel():
     return [s for s, _ in pairs], [t for _, t in pairs]
 
 
+def compute_semantic_accuracy(hypotheses, references):
+    """Compute semantic accuracy (0-100%) via embedding or TF-IDF cosine similarity."""
+    try:
+        from sentence_transformers import SentenceTransformer, util
+        st_model = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+        emb_h = st_model.encode(hypotheses, convert_to_tensor=True)
+        emb_r = st_model.encode(references, convert_to_tensor=True)
+        cos_sim = util.cos_sim(emb_h, emb_r)
+        return float(torch.diag(cos_sim).mean().item()) * 100.0
+    except Exception:
+        pass
+
+    scores = []
+    for h, r in zip(hypotheses, references):
+        if not h.strip() or not r.strip():
+            scores.append(1.0 if h.strip() == r.strip() else 0.0)
+            continue
+        vec = TfidfVectorizer(ngram_range=(1, 2), analyzer="char_wb").fit([h, r])
+        m = vec.transform([h, r])
+        scores.append(float(cosine_similarity(m[0:1], m[1:2])[0][0]))
+    return float(np.mean(scores)) * 100.0 if scores else 0.0
+
+
 def score(name, hypotheses, references):
     bleu = BLEU().corpus_score(hypotheses, [references]).score
-    chrf = CHRF(word_order=2).corpus_score(hypotheses, [references]).score
+    chrf = CHRF(word_order=0).corpus_score(hypotheses, [references]).score
+    chrf_plus = CHRF(word_order=2).corpus_score(hypotheses, [references]).score
+    exact_acc = 100.0 * sum(
+        re.sub(r"\s+", " ", h.strip().lower()) == re.sub(r"\s+", " ", r.strip().lower())
+        for h, r in zip(hypotheses, references)
+    ) / max(1, len(references))
+    sem_acc = compute_semantic_accuracy(hypotheses, references)
+
     path = OUT_DIR / f"{name}.txt"
     path.write_text("\n".join(hypotheses) + "\n", encoding="utf-8")
-    print(f"{name:28s} BLEU={bleu:6.2f}  chrF++={chrf:6.2f}  predictions={path}")
-    return {"model": name, "BLEU": bleu, "chrF++": chrf}
+    print(
+        f"{name:28s} BLEU={bleu:5.2f}  chrF={chrf:5.2f}  chrF++={chrf_plus:5.2f}  "
+        f"Acc={exact_acc:5.2f}%  SemAcc={sem_acc:5.2f}%  predictions={path}"
+    )
+    return {
+        "model": name,
+        "BLEU": bleu,
+        "chrF": chrf,
+        "chrF++": chrf_plus,
+        "Accuracy": exact_acc,
+        "Semantic_Accuracy": sem_acc,
+    }
 
 
 def generate_nllb(src, adapter=None):
@@ -134,7 +178,11 @@ def main():
     rows.append(score("indictrans2_lora", generate_indic(src, "indictrans2_lora_rajasthani_clean"), refs))
     report = OUT_DIR / "metrics.csv"
     report.write_text(
-        "model,BLEU,chrF++\n" + "".join(f"{r['model']},{r['BLEU']:.4f},{r['chrF++']:.4f}\n" for r in rows),
+        "model,BLEU,chrF,chrF++,Accuracy,Semantic_Accuracy\n"
+        + "".join(
+            f"{r['model']},{r['BLEU']:.4f},{r['chrF']:.4f},{r['chrF++']:.4f},{r['Accuracy']:.4f},{r['Semantic_Accuracy']:.4f}\n"
+            for r in rows
+        ),
         encoding="utf-8",
     )
     print(f"Metrics saved to {report}")

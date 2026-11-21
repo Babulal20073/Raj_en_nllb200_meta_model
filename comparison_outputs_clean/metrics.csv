@@ -1,5 +1,5 @@
-model,BLEU,chrF++
-nllb_base,5.7771,24.7132
-nllb_lora,9.8534,31.0400
-indictrans2_base,6.4357,25.3869
-indictrans2_lora,11.7212,34.2511
+model,BLEU,chrF,chrF++,Accuracy,Semantic_Accuracy
+nllb_base,0.1945,11.3777,9.9708,0.0000,75.8583
+nllb_lora,0.1903,12.5924,11.2403,0.0000,77.2892
+indictrans2_base,0.1505,10.6767,9.3414,0.0000,74.1835
+indictrans2_lora,0.1851,12.5099,11.1584,0.0000,77.8933

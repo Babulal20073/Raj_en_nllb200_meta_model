@@ -32,6 +32,7 @@ MODEL_COLUMNS = {"model", "modelname", "system", "run", "experiment", "checkpoin
 LANGUAGE_COLUMNS = {"language", "lang", "sourcelanguage", "targetlanguage"}
 METRIC_LABELS = {
     "bleu": "BLEU", "sacrebleu": "SacreBLEU", "chrf": "chrF", "chrfpp": "chrF++",
+    "accuracy": "Accuracy", "exactaccuracy": "Accuracy", "semanticaccuracy": "Semantic Accuracy", "semacc": "Semantic Accuracy",
     "comet": "COMET", "meteor": "METEOR", "ter": "TER", "loss": "Loss",
     "evalloss": "Validation loss", "valloss": "Validation loss",
     "validationloss": "Validation loss", "testloss": "Test loss", "trainloss": "Training loss",
