@@ -1,86 +1,64 @@
-# English–Rajasthani Machine Translation (Low-Resource)
+#  Machine Translation (Low-Resource)
 
-## 🔍 Overview
-This project focuses on building a machine translation system for **English ↔ Rajasthani**, a low-resource language with very limited parallel data. Since Rajasthani is not directly supported in most multilingual models, this project explores how far we can go using data augmentation, filtering, and efficient fine-tuning techniques.
+prepare_dataset.py -> split and prepare dataset fro training 
 
-The system is built using Meta’s **NLLB-200** model, along with multiple preprocessing and training strategies to improve performance under constraints.
+if you want to generate more data :
+	use the scipts not nameed here
+else :
 
----
+	for finetuning: (*change the path)
+		|── finetune_indic_lora_direct.py <---- finetune indic trance2 on the dataset without hindi pivote   -
+		├── finetune_indic_lora.py        <---- finetune indic trance2 on the dataset with hindi pivote      |---- on this try hyperparamter tuning and try using as much paramter as possible ( lora valur up )
+		├── finetune_nllb_lora_direct.py  <---- finetune nllb on the dataset without hindi pivote            |
+		├── finetune_nllb_lora.py         <---- finetune nllb on the dataset with hindi pivote               -
+	
+evalaute :
+	├── evaluate_lora.py <-- evalaute the model (*change the path)
 
-## ⚙️ Why this project?
-Most machine translation systems rely on large datasets, but languages like Rajasthani lack such resources. This project tries to answer:
-* Can we build a working translation system with limited data?
-* Can synthetic data compensate for missing real data?
-* How much improvement can we get using efficient fine-tuning?
 
----
 
-## 📥 Input Data
-* **Source Language:** Rajasthani (Devanagari script)
-* **Target Language:** English
-* **Initial Dataset Size:** ~1800 parallel sentence pairs
 
-Since Rajasthani is not supported in NLLB-200, we use **hin_Deva (Hindi)** as a proxy language. This allows the model to process Rajasthani text due to script and linguistic similarity.
-
----
-
-## 🧹 Data Processing Pipeline
-1. **Data Cleaning:** Removed empty/duplicate lines and normalized whitespace.
-2. **Zero-Shot Translation:** Used NLLB-200 to generate initial translations for a baseline.
-3. **Back-Translation:** Translated English → Rajasthani to increase dataset diversity.
-4. **LaBSE Filtering:** Used sentence embeddings to remove noisy or weakly aligned pairs.
-5. **Final Dataset:** Combined original and synthetic data for a final size of **~3500–4000 pairs**.
-
----
-
-## 🧠 Model & Training
-* **Base Model:** `facebook/nllb-200-distilled-600M`
-* **Fine-Tuning Method:** **LoRA (Low-Rank Adaptation)**
-    * Trained only ~0.38% of parameters.
-    * Reduced GPU memory usage (Enabled training on RTX 4050).
-
-### Key Parameters:
-| Parameter | Value |
-|---|---|
-| Max sequence length | 160 |
-| Batch size | 4 |
-| Gradient accumulation | 4 |
-| Epochs | 5 |
-| Learning rate | 2e-4 |
-
----
-
-## 📊 Evaluation
-| Model | BLEU | chrF |
-| :--- | :--- | :--- |
-| Zero-Shot NLLB | 4.47 | 25.0 |
-| **LoRA Fine-Tuned** | **7.93** | **31.0** |
-
-### 📈 Interpretation of Results
-The scores show a clear improvement from the zero-shot to the fine-tuned model. While the numbers are lower than high-resource systems, it proves the pipeline successfully adapts the model to a new low-resource language.
-
----
-
-## 🖥️ Demo (Gradio)
-A simple interface built using Gradio to test translations in real time.
-* Input Rajasthani sentence -> Get English translation.
-* Facilitates qualitative evaluation.
-
----
-
-## 🚀 Key Learnings
-* **Data quality** matters more than model size in low-resource settings.
-* **Synthetic data + filtering** can significantly bridge the gap.
-* **LoRA** is highly effective for training large models on consumer-grade GPUs.
-
----
-
-## ⚠️ Limitations
-* Limited dataset size.
-* Proxy language (Hindi) may introduce linguistic bias.
-* Not suitable for long/complex sentences or varied dialects.
-
-## 🔮 Future Improvements
-* Increase dataset to 10k–20k+ pairs.
-* Use better filtering thresholds.
-* Explore multilingual pivots (Hindi ↔ Rajasthani ↔ English).
+Raj_en_nllb200_meta_model/
+├── scripts for fintuning/            # Primary active pipelines (UNTOUCHED)
+│   ├── finetune_nllb_lora.py         # NLLB LoRA (Hindi pivot) + Bayesian Search
+│   ├── finetune_nllb_lora_direct.py  # NLLB LoRA (Direct) + Bayesian Search
+│   ├── finetune_indic_lora.py        # IndicTrans2 LoRA (Hindi pivot) + Bayesian Search
+│   ├── finetune_indic_lora_direct.py # IndicTrans2 LoRA (Direct) + Bayesian Search
+│   ├── bayesian_search.py            # Bayesian Optimization CV & Loss Tracker
+│   ├── evaluate_clean_comparison.py  # Evaluation (BLEU, chrF, chrF++, Acc, SemAcc)
+│   ├── evaluate_indic_lora.py        # IndicTrans2 evaluation
+│   ├── evaluate_lora.py              # LoRA checkpoint evaluation
+│   ├── visualize_results.py          # HTML & chart visualizer
+│   ├── merge_moe_NLLB.py             # Model merging / MoE router script
+│   ├── run_it                        # Pipeline runner
+│   └── test setup/                   # 16-test smoke suite (4 approaches x 4 languages)
+│
+├── extra_scripts/                    # Neat archive of non-active root scripts
+│   ├── data_pipeline/                # Historical corpus & cleaning scripts
+│   │   ├── back_translate.py
+│   │   ├── build_corpus.py
+│   │   ├── labse_filter.py
+│   │   ├── prepare_dataset.py
+│   │   └── split_dataset.py
+│   │
+│   ├── early_experiments/            # Early/baseline experiment scripts
+│   │   ├── app.py
+│   │   ├── evaluate.py
+│   │   ├── evaluate_lora.py
+│   │   ├── finetune_nllb.py
+│   │   ├── finetune_nllb_lora.py
+│   │   ├── main.py
+│   │   ├── predictions.txt
+│   │   └── zero_shot_translate.py
+│   │
+│   └── stray_artifacts/              # Duplicate/stray files from root
+│       ├── =4.57.3
+│       ├── re
+│       ├── README (2).md
+│       └── .git (2)/
+│
+├── data_clean/                       # Processed datasets
+├── data_final/
+├── data_split/
+├── comparison_outputs_clean/         # Evaluation benchmarks & metrics
+└── README.md, pyproject.toml, ...    # Standard root configs
