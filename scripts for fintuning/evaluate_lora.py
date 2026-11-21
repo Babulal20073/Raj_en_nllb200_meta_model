@@ -7,10 +7,10 @@ from sacrebleu.metrics import CHRF
 
 # ================= CONFIG =================
 BASE_MODEL = "facebook/nllb-200-distilled-600M"
-LORA_MODEL_PATH = "nllb_lora_rajasthani"    
+LORA_MODEL_PATH = "nllb_lora_rajasthani_direct"    
 
-TEST_RAJ = "data_split/test.raj"
-TEST_ENG = "data_split/test.eng"
+TEST_RAJ = "../data_split/test.raj"
+TEST_ENG = "../data_split/test.eng"
 
 SRC_LANG = "hin_Deva"
 TGT_LANG = "eng_Latn"

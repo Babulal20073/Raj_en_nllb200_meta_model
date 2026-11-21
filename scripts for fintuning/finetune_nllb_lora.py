@@ -1,4 +1,5 @@
 """Train an NLLB LoRA adapter on the genuine train split only (no back-translation)."""
+import sys
 from pathlib import Path
 
 import torch
@@ -13,15 +14,28 @@ from transformers import (
     Seq2SeqTrainingArguments,
 )
 
+sys.path.append(str(Path(__file__).resolve().parent))
+from bayesian_search import bayesian_search_cv
+
+
+def resolve_path(p):
+    path = Path(p)
+    if path.exists():
+        return str(path)
+    parent_data = Path(__file__).resolve().parent.parent / "data_split" / path.name
+    if parent_data.exists():
+        return str(parent_data)
+    return str(path)
+
 
 MODEL_REPO = "facebook/nllb-200-distilled-600M"
 _snapshots = Path.home() / ".cache/huggingface/hub/models--facebook--nllb-200-distilled-600M/snapshots"
 _cached = [p for p in _snapshots.glob("*") if (p / "pytorch_model.bin").is_file()]
 MODEL_NAME = str(_cached[0]) if _cached else MODEL_REPO
-TRAIN_SRC = "data_split/train.raj"
-TRAIN_TGT = "data_split/train.eng"
-DEV_SRC = "data_split/val.raj"
-DEV_TGT = "data_split/val.eng"
+TRAIN_SRC = resolve_path("data_split/train.raj")
+TRAIN_TGT = resolve_path("data_split/train.eng")
+DEV_SRC = resolve_path("data_split/val.raj")
+DEV_TGT = resolve_path("data_split/val.eng")
 SRC_LANG = "hin_Deva"  # Hindi proxy: NLLB has no Rajasthani language code
 TGT_LANG = "eng_Latn"
 OUTPUT_DIR = "nllb_lora_rajasthani_clean"
@@ -31,6 +45,14 @@ GRAD_ACCUM = 8
 EPOCHS = 5
 LR = 2e-4
 SEED = 42
+
+N_TRIALS = 5
+SEARCH_SPACE = {
+    "lr": (1e-5, 5e-4, "log"),
+    "r": [8, 16, 32, 64],
+    "lora_alpha": [16, 32, 64],
+    "lora_dropout": [0.05, 0.1, 0.2],
+}
 
 
 def load_pairs(src_path, tgt_path):
@@ -65,8 +87,21 @@ tokenizer.tgt_lang = TGT_LANG
 use_cuda = torch.cuda.is_available()
 use_bf16 = use_cuda and torch.cuda.is_bf16_supported()
 dtype = torch.bfloat16 if use_bf16 else (torch.float16 if use_cuda else torch.float32)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME, torch_dtype=dtype)
-model.generation_config.forced_bos_token_id = tokenizer.convert_tokens_to_ids(TGT_LANG)
+def create_model(r=16, lora_alpha=32, lora_dropout=0.1):
+    m = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME, torch_dtype=dtype)
+    m.generation_config.forced_bos_token_id = tokenizer.convert_tokens_to_ids(TGT_LANG)
+    m = get_peft_model(
+        m,
+        LoraConfig(
+            task_type=TaskType.SEQ_2_SEQ_LM,
+            r=r,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+            bias="none",
+            target_modules=["q_proj", "k_proj"],
+        ),
+    )
+    return m
 
 
 def tokenize(batch):
@@ -84,54 +119,59 @@ def to_dataset(pairs):
 
 
 train_dataset, eval_dataset = to_dataset(train_pairs), to_dataset(dev_pairs)
-model = get_peft_model(
-    model,
-    LoraConfig(
-        task_type=TaskType.SEQ_2_SEQ_LM,
-        r=16,
-        lora_alpha=32,
-        lora_dropout=0.1,
-        bias="none",
-        target_modules=["q_proj", "k_proj"],
-    ),
-)
-model.print_trainable_parameters()
 
-args = Seq2SeqTrainingArguments(
+
+def train_trial(params, trial_dir):
+    m = create_model(
+        r=int(params.get("r", 16)),
+        lora_alpha=int(params.get("lora_alpha", 32)),
+        lora_dropout=float(params.get("lora_dropout", 0.1)),
+    )
+    args = Seq2SeqTrainingArguments(
+        output_dir=trial_dir,
+        per_device_train_batch_size=TRAIN_BATCH_SIZE,
+        per_device_eval_batch_size=1,
+        label_names=["labels"],
+        remove_unused_columns=False,
+        gradient_accumulation_steps=GRAD_ACCUM,
+        learning_rate=float(params.get("lr", LR)),
+        num_train_epochs=EPOCHS,
+        bf16=use_bf16,
+        fp16=use_cuda and not use_bf16,
+        lr_scheduler_type="cosine",
+        warmup_ratio=0.05,
+        weight_decay=0.01,
+        predict_with_generate=False,
+        eval_strategy="epoch",
+        save_strategy="epoch",
+        save_total_limit=1,
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_loss",
+        greater_is_better=False,
+        logging_steps=25,
+        report_to="none",
+        dataloader_num_workers=0,
+        seed=SEED,
+    )
+    trainer = Seq2SeqTrainer(
+        model=m,
+        args=args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer),
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
+    )
+    trainer.train()
+    best_loss = float(trainer.state.best_metric) if trainer.state.best_metric is not None else float("inf")
+    return best_loss, m, trainer.state.log_history
+
+
+bayesian_search_cv(
+    train_fn=train_trial,
+    search_space=SEARCH_SPACE,
+    n_trials=N_TRIALS,
+    initial_params={"lr": LR, "r": 16, "lora_alpha": 32, "lora_dropout": 0.1},
     output_dir=OUTPUT_DIR,
-    per_device_train_batch_size=TRAIN_BATCH_SIZE,
-    per_device_eval_batch_size=1,
-    label_names=["labels"],
-    remove_unused_columns=False,
-    gradient_accumulation_steps=GRAD_ACCUM,
-    learning_rate=LR,
-    num_train_epochs=EPOCHS,
-    bf16=use_bf16,
-    fp16=use_cuda and not use_bf16,
-    lr_scheduler_type="cosine",
-    warmup_ratio=0.05,
-    weight_decay=0.01,
-    predict_with_generate=False,
-    eval_strategy="epoch",
-    save_strategy="epoch",
-    save_total_limit=1,
-    load_best_model_at_end=True,
-    metric_for_best_model="eval_loss",
-    greater_is_better=False,
-    logging_steps=25,
-    report_to="none",
-    dataloader_num_workers=0,
+    tokenizer=tokenizer,
     seed=SEED,
 )
-trainer = Seq2SeqTrainer(
-    model=model,
-    args=args,
-    train_dataset=train_dataset,
-    eval_dataset=eval_dataset,
-    data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer),
-    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
-)
-trainer.train()
-trainer.save_model(OUTPUT_DIR)
-tokenizer.save_pretrained(OUTPUT_DIR)
-print(f"Best validation loss: {trainer.state.best_metric:.4f} | saved {OUTPUT_DIR}")

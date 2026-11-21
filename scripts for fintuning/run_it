@@ -1,0 +1,14 @@
+prepare_dataset.py -> split and prepare dataset fro training 
+
+if you want to generate more data :
+	use the scipts not nameed here
+else :
+
+	for finetuning: (*change the path)
+		|── finetune_indic_lora_direct.py <---- finetune indic trance2 on the dataset without hindi pivote   -
+		├── finetune_indic_lora.py        <---- finetune indic trance2 on the dataset with hindi pivote      |---- on this try hyperparamter tuning and try using as much paramter as possible ( lora valur up )
+		├── finetune_nllb_lora_direct.py  <---- finetune nllb on the dataset without hindi pivote            |
+		├── finetune_nllb_lora.py         <---- finetune nllb on the dataset with hindi pivote               -
+	
+evalaute :
+	├── evaluate_lora.py <-- evalaute the model (*change the path)
