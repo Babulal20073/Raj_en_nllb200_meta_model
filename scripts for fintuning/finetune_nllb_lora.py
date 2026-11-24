@@ -47,6 +47,7 @@ LR = 2e-4
 SEED = 80085
 
 N_TRIALS = 10
+K_FOLDS = int(os.environ.get("K_FOLDS", 3))
 SEARCH_SPACE = {
     "lr": (5e-6, 1e-3, "log"),
     "r": [4, 8, 16, 32, 64, 128],
@@ -121,7 +122,9 @@ def to_dataset(pairs):
 train_dataset, eval_dataset = to_dataset(train_pairs), to_dataset(dev_pairs)
 
 
-def train_trial(params, trial_dir):
+def train_trial(params, trial_dir, train_data=None, eval_data=None):
+    train_ds = train_data if train_data is not None else train_dataset
+    eval_ds = eval_data if eval_data is not None else eval_dataset
     m = create_model(
         r=int(params.get("r", 16)),
         lora_alpha=int(params.get("lora_alpha", 32)),
@@ -156,8 +159,8 @@ def train_trial(params, trial_dir):
     trainer = Seq2SeqTrainer(
         model=m,
         args=args,
-        train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
+        train_dataset=train_ds,
+        eval_dataset=eval_ds,
         data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer),
         callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
     )
@@ -174,4 +177,6 @@ bayesian_search_cv(
     output_dir=OUTPUT_DIR,
     tokenizer=tokenizer,
     seed=SEED,
+    k_folds=K_FOLDS,
+    dataset=train_dataset,
 )

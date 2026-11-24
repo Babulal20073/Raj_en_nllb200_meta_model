@@ -5,6 +5,7 @@ visualization for research papers.
 """
 import csv
 import gc
+import inspect
 import json
 import os
 import shutil
@@ -20,6 +21,7 @@ import torch
 from scipy.stats import norm
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
+from sklearn.model_selection import KFold
 
 
 class ParameterSpec:
@@ -221,17 +223,21 @@ def bayesian_search_cv(
     output_dir="best_model",
     tokenizer=None,
     seed=42,
+    k_folds=1,
+    dataset=None,
 ):
-    """Run Bayesian Search over hyperparameters minimizing validation loss.
+    """Run Bayesian Search with K-Fold Cross-Validation over hyperparameters.
 
     Args:
-        train_fn: Callable(params, trial_dir) -> (val_loss, model) or (val_loss, model, log_history)
+        train_fn: Callable(params, trial_dir) or Callable(params, trial_dir, train_data, eval_data)
         search_space: dict of param_name -> range or choices list
         n_trials: int, total number of Bayesian search trials
         initial_params: dict of starting hyperparameters (optional)
         output_dir: str/Path, where the best model, plots, and CSVs are saved
         tokenizer: Optional tokenizer to save to output_dir
         seed: Random seed
+        k_folds: int, number of cross-validation folds (k_folds > 1 enables K-Fold CV)
+        dataset: Dataset or list of pairs to split across K folds
 
     Returns:
         best_params (dict), best_val_loss (float)
@@ -252,8 +258,11 @@ def bayesian_search_cv(
     plots_dir = Path(output_dir) / "plots"
     plots_dir.mkdir(parents=True, exist_ok=True)
 
+    sig = inspect.signature(train_fn)
+    accepts_fold_datasets = "train_data" in sig.parameters or len(sig.parameters) >= 4
+
     print("\n" + "=" * 65)
-    print(f" Starting Bayesian Search CV ({n_trials} trials)")
+    print(f" Starting Bayesian Search CV ({n_trials} trials | {k_folds}-Fold CV)")
     print(f" Search Space: {list(search_space.keys())}")
     print(f" Final Output & Plots Dir: {output_dir}")
     print("=" * 65)
@@ -288,7 +297,7 @@ def bayesian_search_cv(
 
         x_norm = [specs[name].to_normalized(candidate_params[name]) for name in param_names]
 
-        # 2. Train and evaluate
+        # 2. Train and evaluate (with K-Fold Cross Validation if k_folds > 1)
         trial_dir = trials_base_dir / f"trial_{trial_idx + 1}"
         trial_dir.mkdir(parents=True, exist_ok=True)
 
@@ -296,14 +305,67 @@ def bayesian_search_cv(
 
         log_history = None
         try:
-            train_result = train_fn(candidate_params, str(trial_dir))
-            if isinstance(train_result, tuple):
-                if len(train_result) == 3:
-                    val_loss, trained_model, log_history = train_result
-                else:
-                    val_loss, trained_model = train_result[:2]
+            if k_folds > 1 and dataset is not None and len(dataset) >= k_folds:
+                kf = KFold(n_splits=k_folds, shuffle=True, random_state=seed + trial_idx)
+                fold_losses = []
+                best_fold_model = None
+                best_fold_loss = float("inf")
+                best_fold_log = None
+
+                for fold_idx, (train_idx, val_idx) in enumerate(kf.split(range(len(dataset)))):
+                    fold_dir = trial_dir / f"fold_{fold_idx + 1}"
+                    fold_dir.mkdir(parents=True, exist_ok=True)
+
+                    if hasattr(dataset, "select"):
+                        fold_train = dataset.select(train_idx)
+                        fold_val = dataset.select(val_idx)
+                    else:
+                        fold_train = [dataset[i] for i in train_idx]
+                        fold_val = [dataset[i] for i in val_idx]
+
+                    print(f"  [Fold {fold_idx + 1}/{k_folds}] Training ({len(fold_train)} train, {len(fold_val)} val pairs)...")
+                    if accepts_fold_datasets:
+                        fold_result = train_fn(candidate_params, str(fold_dir), fold_train, fold_val)
+                    else:
+                        fold_result = train_fn(candidate_params, str(fold_dir))
+
+                    if isinstance(fold_result, tuple):
+                        if len(fold_result) == 3:
+                            f_loss, f_model, f_log = fold_result
+                        else:
+                            f_loss, f_model, f_log = fold_result[0], fold_result[1], None
+                    else:
+                        f_loss, f_model, f_log = fold_result, None, None
+
+                    fold_losses.append(f_loss)
+                    print(f"  [Fold {fold_idx + 1}/{k_folds}] Val Loss = {f_loss:.4f}")
+
+                    if f_loss < best_fold_loss and f_model is not None:
+                        best_fold_loss = f_loss
+                        if best_fold_model is not None and best_fold_model != f_model:
+                            del best_fold_model
+                        best_fold_model = f_model
+                        best_fold_log = f_log
+                    else:
+                        if f_model is not None and f_model != best_fold_model:
+                            del f_model
+                    gc.collect()
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+
+                val_loss = float(np.mean(fold_losses))
+                trained_model = best_fold_model
+                log_history = best_fold_log
+                print(f"[Trial {trial_idx + 1}/{n_trials}] {k_folds}-Fold Mean Loss = {val_loss:.4f} (Folds: {[round(l, 4) for l in fold_losses]})")
             else:
-                val_loss, trained_model = train_result, None
+                train_result = train_fn(candidate_params, str(trial_dir))
+                if isinstance(train_result, tuple):
+                    if len(train_result) == 3:
+                        val_loss, trained_model, log_history = train_result
+                    else:
+                        val_loss, trained_model = train_result[:2]
+                else:
+                    val_loss, trained_model = train_result, None
         except Exception as e:
             print(f"Trial {trial_idx + 1} failed with error: {e}")
             val_loss = float("inf")
@@ -333,7 +395,11 @@ def bayesian_search_cv(
 
             with open(Path(output_dir) / "best_params.json", "w", encoding="utf-8") as f:
                 json.dump(
-                    {"best_params": best_params, "best_val_loss": best_loss},
+                    {
+                        "best_params": best_params,
+                        "best_val_loss": best_loss,
+                        "k_folds": k_folds,
+                    },
                     f,
                     indent=2,
                     default=lambda o: int(o) if isinstance(o, np.integer) else (float(o) if isinstance(o, np.floating) else str(o)),

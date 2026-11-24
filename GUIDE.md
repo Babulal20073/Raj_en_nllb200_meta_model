@@ -1,4 +1,4 @@
-# ⚡ Teammate Quickstart (1-Minute Cheat Sheet)
+# GUIDE
 
 Fine-tune your assigned regional language to English: **Rajasthani (`raj`)**, **Haryanvi (`har`)**, **Odia (`odia`)**, or **Bengali (`ben`)**.
 
