@@ -20,6 +20,11 @@ from bayesian_search import bayesian_search_cv
 
 
 def resolve_path(p):
+    data_dir = os.environ.get("DATA_DIR")
+    if data_dir:
+        cand = Path(data_dir) / Path(p).name
+        if cand.exists():
+            return str(cand)
     path = Path(p)
     if path.exists():
         return str(path)
@@ -37,12 +42,14 @@ from IndicTransToolkit import IndicDataCollator, IndicProcessor
 
 
 MODEL_NAME = "ai4bharat/indictrans2-indic-en-dist-200M"
-TRAIN_SRC = resolve_path("data_split/train.raj")
-TRAIN_TGT = resolve_path("data_split/train.eng")
-DEV_SRC = resolve_path("data_split/val.raj")
-DEV_TGT = resolve_path("data_split/val.eng")
+src_lang_ext = os.environ.get("SRC_LANG", "raj")
+TRAIN_SRC = resolve_path(f"train.{src_lang_ext}")
+TRAIN_TGT = resolve_path("train.eng")
+DEV_SRC = resolve_path(f"val.{src_lang_ext}")
+DEV_TGT = resolve_path("val.eng")
 SRC_LANG = "hin_Deva"  # Hindi proxy: IndicTrans2 has no Rajasthani language code
 TGT_LANG = "eng_Latn"
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "indictrans2_lora_rajasthani_clean")
 OUTPUT_DIR = "indictrans2_lora_rajasthani_clean"
 MAX_LEN = 128
 TRAIN_BATCH_SIZE = 4
